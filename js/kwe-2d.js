@@ -1,11 +1,12 @@
 $(function () {
     var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
+    var drawingContent = '<canvas id="c"  width="800" height="500"></canvas>';
     $('#homepage').w2layout({
         name: 'layout',
         panels: [
             { type: 'top',  size: 50, resizable: true, style: pstyle, content: 'top' },
             { type: 'left', size: 200, resizable: true, style: pstyle, content: 'left' },
-            { type: 'main', style: pstyle, content: 'main' },
+            { type: 'main', style: pstyle, content: drawingContent },
             { type: 'preview', size: '50%', resizable: true, style: pstyle, content: 'preview' },
             { type: 'right', size: 200, resizable: true, style: pstyle, content: 'right' },
             { type: 'bottom', size: 50, resizable: true, style: pstyle, content: 'bottom' }
@@ -40,7 +41,7 @@ $(function() {
 
       img.perPixelTargetFind = true;
       img.targetFindTolerance = 4;
-      img.hasControls = img.hasBorders = false;
+      img.hasControls = img.hasBorders = true;
 
       img.scale(fabric.util.getRandomInt(50, 100) / 100);
 
