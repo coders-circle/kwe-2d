@@ -1,6 +1,7 @@
 // Sidebars
 var leftSideBar;
 var rightSideBar
+var canvas;
 
 // Refresh trees on the sidebars
 function refreshSidebar() {
@@ -9,21 +10,21 @@ function refreshSidebar() {
     // for each world, add the world to the left sidebar
     // and for each entity in that world, add the entities as the world's children
     for (var world in worlds) {
-        enNodes = [];
+        var enNodes = [];
         for (var entity in worlds[world].entities) {
-            enNode = { id: "entity:" + world+":"+entity, text: entity, img: 'icon-page', nodes:[] };
+            var enNode = { id: "entity:" + world+":"+entity, text: entity, img: 'icon-page', nodes:[] };
             enNodes.push(enNode);
         }
-        node = { id: "world:" + world, text: world, img: 'icon-folder', expanded:true, group:true, nodes: enNodes };
+        var node = { id: "world:" + world, text: world, img: 'icon-folder', expanded:true, group:true, nodes: enNodes };
         leftSideBar.nodes.push(node);
     };
 
 
-    spNodes = [];
+    var spNodes = [];
 
     // for each sprite, add it to the right sidebar
     for (var sprite in sprites) {
-        spNode = { id: "sprite:" + sprite, text: sprite, img: 'icon-page', nodes:[] };
+        var spNode = { id: "sprite:" + sprite, text: sprite, img: 'icon-page', nodes:[] };
         spNodes.push(spNode);
     }
 
@@ -36,14 +37,32 @@ function refreshSidebar() {
     ];
 }
 
-function changeProperty(world, entity, component, property, value) {
-    comp = components[component];
+function changeProperty(world, entityName, component, property, value) {
+    var comp = components[component];
+    var entity = worlds[world].entities[entityName];
+
     if (comp[property] == "Number")
-        worlds[world].entities[entity].components[component][property] = Number(value);
+        entity.components[component][property] = Number(value);
     else
-        worlds[world].entities[entity].components[component][property] = value;
+        entity.components[component][property] = value;
+
+    if (component == "Transformation" && entity.img != undefined) {
+        if (property == "Translate-X")
+            entity.img.left = Number(value);
+        else if (property == "Translate-Y")
+            entity.img.top = Number(value);
+        else if (property == "Scale-X")
+            entity.img.scaleX = Number(value);
+        else if (property == "Scale-Y")
+            entity.img.scaleY = Number(value);
+        else if (property == "Angle")
+            entity.img.angle = Number(value);
+        canvas.renderAll();
+    }
 }
 
+
+var currentSelection;
 
 // get the content to display in the bottom "Properties" pane
 function getContent(id) {
@@ -55,24 +74,24 @@ function getContent(id) {
         var names = id.substring("entity:".length).split(':');
 
         // names[0] is world name, names[1] is entity name
-        entity = worlds[names[0]].entities[names[1]];
+        var entity = worlds[names[0]].entities[names[1]];
 
-        content = '<b>' + names[1] + '</b><br/>';
+        var content = '<b>' + names[1] + '</b><br/>';
         for (var c in entity.components) {
             content += '<u>' + c + ':</u><br/>';
-            component = entity.components[c]
-            compdef = components[c];
+            var component = entity.components[c]
+            var compdef = components[c];
 
             for (var prop in component) {
                 // For each property of the component, we add a label and an input control
 
-                property = component[prop];
-                propcontent = "";
+                var property = component[prop];
+                var propcontent = "";
 
-                eventstr = "oninput='changeProperty(\"" + names[0] + "\", \"" + names[1] + "\", \""
+                var eventstr = "oninput='changeProperty(\"" + names[0] + "\", \"" + names[1] + "\", \""
                             + c + "\", \"" + prop + "\", this.value)'";
 
-                propdef = compdef[prop];
+                var propdef = compdef[prop];
 
                 if (propdef == 'String')
                     propcontent = "<input " + eventstr + " type='text' value='" + property + "'>";
@@ -92,7 +111,6 @@ function getContent(id) {
                     propcontent += "</select>";
                 }
 
-                
                 content += prop + ": " + propcontent + " ";
             }
             content += "<br/>"
@@ -133,6 +151,7 @@ $(function () {
         img: null,
         nodes: [],
         onClick: function (event) {
+            currentSelection = event.target;
             w2ui['layout'].content('preview', getContent(event.target));
         }
     });
@@ -143,6 +162,7 @@ $(function () {
         img: null,
         nodes: [],
         onClick: function (event) {
+            currentSelection = event.target;
             w2ui['layout'].content('preview', getContent(event.target));
         }
     })
@@ -161,42 +181,91 @@ $(function () {
 
     refreshSidebar();
 
+    canvas = new fabric.Canvas('c', {
+        hoverCursor: 'pointer',
+        selection: false
+    });
+    
+    canvas.on({
+        'object:moving': function(e) {
+            e.target.opacity = 0.5;
+        },
+        'object:modified': function(e) {
+            e.target.opacity = 1;
+
+            var tcomp = e.target.entity.components["Transformation"];
+            tcomp["Translate-X"] = e.target.left;
+            tcomp["Translate-Y"] = e.target.top;
+            tcomp["Scale-X"] = e.target.scaleX;
+            tcomp["Scale-Y"] = e.target.scaleY;
+            tcomp["Angle"] = e.target.angle;
+
+            if (currentSelection != undefined)
+                w2ui['layout'].content('preview', getContent(currentSelection));
+        }
+    });
+
+    rerenderall();
 });
+
+function createImage(entity) {
+    fabric.Image.fromURL('assets/katana.png', function(img) {
+        var sprComp = entity.components["Sprite"];
+        var transComp = entity.components["Transformation"];
+        img.set({
+            left: transComp["Translate-X"],
+            top: transComp["Translate-Y"],
+            angle: transComp["Angle"],
+            scaleX: transComp["Scale-X"],
+            scaleY: transComp["Scale-Y"],
+            perPixelTargetFind: true,
+            targetFindTolerance: 4,
+            hasControls: true,
+            hasBorders: true,
+        });
+        
+        img.entity = entity;
+        entity.img = img;
+        canvas.add(img);
+    });
+}
+
+function rerenderall() {
+    canvas.clear();
+
+    var currentWorld = "World1"; // Change this to change the world
+    for (var entityName in worlds[currentWorld].entities) {
+        var entity = worlds[currentWorld].entities[entityName];
+
+        if ("Sprite" in entity.components && "Transformation" in entity.components) {
+            createImage(entity);
+        }
+    }
+
+    canvas.renderAll();
+}
 
 
 
 $(function() {
-  var canvas = this.__canvas = new fabric.Canvas('c', {
-    hoverCursor: 'pointer',
-    selection: false
-  });
 
-  canvas.on({
-    'object:moving': function(e) {
-      e.target.opacity = 0.5;
-    },
-    'object:modified': function(e) {
-      e.target.opacity = 1;
-    }
-  });
+  // for (var i = 0, len = 15; i < len; i++) {
+  //   fabric.Image.fromURL('assets/katana.png', function(img) {
+  //     img.set({
+  //       left: fabric.util.getRandomInt(0, 600),
+  //       top: fabric.util.getRandomInt(0, 500),
+  //       angle: fabric.util.getRandomInt(0, 90)
+  //     });
 
-  for (var i = 0, len = 15; i < len; i++) {
-    fabric.Image.fromURL('assets/katana.png', function(img) {
-      img.set({
-        left: fabric.util.getRandomInt(0, 600),
-        top: fabric.util.getRandomInt(0, 500),
-        angle: fabric.util.getRandomInt(0, 90)
-      });
+  //     img.perPixelTargetFind = true;
+  //     img.targetFindTolerance = 4;
+  //     img.hasControls = img.hasBorders = true;
 
-      img.perPixelTargetFind = true;
-      img.targetFindTolerance = 4;
-      img.hasControls = img.hasBorders = true;
+  //     img.scale(fabric.util.getRandomInt(50, 100) / 100);
 
-      img.scale(fabric.util.getRandomInt(50, 100) / 100);
-
-      canvas.add(img);
-    });
-  }
+  //     canvas.add(img);
+  //   });
+  // }
 });
 
 
