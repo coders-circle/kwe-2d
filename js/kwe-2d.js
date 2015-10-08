@@ -56,7 +56,7 @@ function changeProperty(world, entityName, component, property, value) {
         else if (property == "Scale-Y")
             entity.img.scaleY = Number(value);
         else if (property == "Angle")
-            entity.img.angle = Number(value);
+            entity.img.rotate(Number(value));
         canvas.renderAll();
     }
 }
