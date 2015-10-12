@@ -3,6 +3,10 @@ var leftSideBar;
 var rightSideBar
 var canvas;
 
+var currentSelection;
+var currentWorld = "World1"; // Change this to change the world
+
+
 // Refresh trees on the sidebars
 function refreshSidebar() {
     leftSideBar.nodes = [];
@@ -61,9 +65,6 @@ function changeProperty(world, entityName, component, property, value) {
     }
 }
 
-
-var currentSelection;
-
 // get the content to display in the bottom "Properties" pane
 function getContent(id) {
     var content = "";
@@ -78,9 +79,18 @@ function getContent(id) {
 
         var content = '<b>' + names[1] + '</b><br/>';
         for (var c in entity.components) {
-            content += '<u>' + c + ':</u><br/>';
+            content += '<u>' + c + ':</u> ';
             var component = entity.components[c]
             var compdef = components[c];
+
+
+            if (c != "Sprite" && c != "Transformation") {
+                var delcompevent = "delComponent(worlds['" + names[0] + "'].entities['" + names[1] + "'],'" + c + "');"
+                                + "w2ui['layout'].content('preview', getContent(currentSelection));";
+                content += "<button onclick=\"" + delcompevent + "\"> Remove </button><br/>";
+            }
+            else
+                content += "<br/>"
 
             for (var prop in component) {
                 // For each property of the component, we add a label and an input control
@@ -93,10 +103,10 @@ function getContent(id) {
 
                 var propdef = compdef[prop];
 
-                if (propdef == 'String')
+                if (typeof propdef === 'string')
                     propcontent = "<input " + eventstr + " type='text' value='" + property + "'>";
 
-                else if (propdef == 'Number')
+                else if (typeof propdef === 'number')
                     propcontent = "<input " + eventstr + " type='number' value='" + property + "' step='0.1' style='width: 90px;'>";
 
                 else if (Array.isArray(propdef)) {
@@ -113,11 +123,29 @@ function getContent(id) {
 
                 content += prop + ": " + propcontent + " ";
             }
-            content += "<br/>"
+            content += "<br/><br/>"
         }
+        
+        var addcompevent = "addComponent(worlds['" + names[0] + "'].entities['" + names[1] + "'],selectedComponent);"
+                            + "w2ui['layout'].content('preview', getContent(currentSelection));";
+        excontent = "<select oninput=\"selectedComponent=this.value;\">";
+        selectedComponent = "";
+        for (comp in components) {
+            if (!(comp in entity.components)) {
+                if (selectedComponent == "")
+                    selectedComponent = comp;
+                excontent += "<option value='" + comp + "'>" + comp + "</option>";
+            }
+        }
+        excontent += "</select>";
+        excontent += "<button onclick=\"" + addcompevent + "\">Add Component</button><br/>"
+        if (selectedComponent != "")
+            content += excontent;
     }
     return content;
 }
+
+var selectedComponent;
 
 $(function () {
     var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
@@ -190,18 +218,26 @@ $(function () {
         'object:moving': function(e) {
             e.target.opacity = 0.5;
         },
+        'object:selected': function(e) {
+            if (e.target.entity != undefined) {
+                currentSelection = "entity:" + currentWorld + ":" + e.target.entity.name;
+                w2ui['layout'].content('preview', getContent(currentSelection));
+            }
+        },
         'object:modified': function(e) {
             e.target.opacity = 1;
+            
+            if (e.target.entity != undefined) {
+                var tcomp = e.target.entity.components["Transformation"];
+                tcomp["Translate-X"] = e.target.left;
+                tcomp["Translate-Y"] = e.target.top;
+                tcomp["Scale-X"] = e.target.scaleX;
+                tcomp["Scale-Y"] = e.target.scaleY;
+                tcomp["Angle"] = e.target.angle;
 
-            var tcomp = e.target.entity.components["Transformation"];
-            tcomp["Translate-X"] = e.target.left;
-            tcomp["Translate-Y"] = e.target.top;
-            tcomp["Scale-X"] = e.target.scaleX;
-            tcomp["Scale-Y"] = e.target.scaleY;
-            tcomp["Angle"] = e.target.angle;
-
-            if (currentSelection != undefined)
-                w2ui['layout'].content('preview', getContent(currentSelection));
+                if (currentSelection != undefined)
+                    w2ui['layout'].content('preview', getContent(currentSelection));
+            }
         }
     });
 
@@ -218,12 +254,14 @@ function createImage(entity) {
             angle: transComp["Angle"],
             scaleX: transComp["Scale-X"],
             scaleY: transComp["Scale-Y"],
+            originX: "center",
+            originY: "center",
             perPixelTargetFind: true,
             targetFindTolerance: 4,
             hasControls: true,
             hasBorders: true,
         });
-        
+
         img.entity = entity;
         entity.img = img;
         canvas.add(img);
@@ -233,7 +271,6 @@ function createImage(entity) {
 function rerenderall() {
     canvas.clear();
 
-    var currentWorld = "World1"; // Change this to change the world
     for (var entityName in worlds[currentWorld].entities) {
         var entity = worlds[currentWorld].entities[entityName];
 
@@ -274,3 +311,4 @@ if (typeof String.prototype.startsWith != 'function') {
         return this.indexOf(str) === 0;
     };
 }
+
