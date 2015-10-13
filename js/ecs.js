@@ -28,16 +28,28 @@ function addSprite(sprite_name, file_name) {
     components["Sprite"]["Sprite"].push(sprite_name);
 }
 
+function deleteSprite(sprite_name) {
+    delete sprites[sprite_name];
+}
+
 function addWorld(world_name) {
     var world = { "entities": {}, };
     worlds[world_name] = world;
     return world;
 }
 
+function deleteWorld(world_name) {
+    delete worlds[world_name];
+}
+
 function addEntity(world, entity_name) {
     var entity = { "components": {}, "name":entity_name };
     world.entities[entity_name] = entity;
     return entity;
+}
+
+function deleteEntity(world, entity_name) {
+    delete world.entities[entity_name];
 }
 
 // add an entity with sprite and transformation

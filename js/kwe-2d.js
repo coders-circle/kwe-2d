@@ -197,8 +197,8 @@ $(function () {
     w2ui['layout'].content('right', rightSideBar);
 
 
-    addSprite("Player");
-    addSprite("Ground");
+    addSprite("Player", "assets/katana.png");
+    addSprite("Ground", "assets/katana.png");
 
     var w1 = addWorld("World1");
     addSpriteEntity(w1, "Player", "Player");
@@ -245,7 +245,8 @@ $(function () {
 });
 
 function createImage(entity) {
-    fabric.Image.fromURL('assets/katana.png', function(img) {
+    var sprite = sprites[entity.components["Sprite"]["Sprite"]];
+    fabric.Image.fromURL(sprite.file, function(img) {
         var sprComp = entity.components["Sprite"];
         var transComp = entity.components["Transformation"];
         img.set({
