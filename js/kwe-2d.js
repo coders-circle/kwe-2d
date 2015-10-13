@@ -16,10 +16,10 @@ function refreshSidebar() {
     for (var world in worlds) {
         var enNodes = [];
         for (var entity in worlds[world].entities) {
-            var enNode = { id: "entity:" + world+":"+entity, text: entity, img: 'icon-page', nodes:[] };
+            var enNode = { id: "entity:" + world+":"+entity, text: entity, icon: 'fa fa-paper-plane-o', nodes:[] };
             enNodes.push(enNode);
         }
-        var node = { id: "world:" + world, text: world, img: 'icon-folder', expanded:true, group:true, nodes: enNodes };
+        var node = { id: "world:" + world, text: world, icon: 'fa fa-folder', expanded:true, group:true, nodes: enNodes };
         leftSideBar.nodes.push(node);
     };
 
@@ -28,14 +28,14 @@ function refreshSidebar() {
 
     // for each sprite, add it to the right sidebar
     for (var sprite in sprites) {
-        var spNode = { id: "sprite:" + sprite, text: sprite, img: 'icon-page', nodes:[] };
+        var spNode = { id: "sprite:" + sprite, text: sprite, icon: 'fa fa-file-image-o', nodes:[] };
         spNodes.push(spNode);
     }
 
     rightSideBar.nodes = [
-        { id: 'resources', text: 'Resources', img: 'icon-folder', expanded: true, group: true,
+        { id: 'resources', text: 'Resources', icon: 'fa fa-folder', expanded: true, group: true,
             nodes: [
-                { id: 'resource-sprites', text: 'Sprites', img: 'icon-folder', expanded: true, nodes: spNodes }
+                { id: 'resource-sprites', text: 'Sprites', icon: 'fa fa-folder-o', expanded: true, nodes: spNodes }
             ]
         }
     ];
@@ -125,7 +125,7 @@ function getContent(id) {
             }
             content += "<br/><br/>"
         }
-        
+
         var addcompevent = "addComponent(worlds['" + names[0] + "'].entities['" + names[1] + "'],selectedComponent);"
                             + "w2ui['layout'].content('preview', getContent(currentSelection));";
         excontent = "<select oninput=\"selectedComponent=this.value;\">";
@@ -166,14 +166,14 @@ $(function () {
     $('#toolbar').w2toolbar({
         name: 'toolbar',
         items: [
-            { type: 'menu',   id: 'menu-file', caption: 'File', img: 'icon-folder', items: [
-                { text: 'New Project', icon: 'icon-page' },
+            { type: 'menu',   id: 'menu-file', caption: 'File', icon: 'fa fa-navicon', items: [
+                { text: 'New Project', icon: 'fa fa-home' },
                 { text: 'Open Project', icon: 'icon-page' },
                 { text: 'Close Project', icon: 'icon-page' }
             ]}
         ]
     });
-    
+
     leftSideBar = $().w2sidebar({
         name: 'sidebar-left',
         img: null,
@@ -213,7 +213,7 @@ $(function () {
         hoverCursor: 'pointer',
         selection: false
     });
-    
+
     canvas.on({
         'object:moving': function(e) {
             e.target.opacity = 0.5;
@@ -226,7 +226,7 @@ $(function () {
         },
         'object:modified': function(e) {
             e.target.opacity = 1;
-            
+
             if (e.target.entity != undefined) {
                 var tcomp = e.target.entity.components["Transformation"];
                 tcomp["Translate-X"] = e.target.left;
@@ -311,4 +311,3 @@ if (typeof String.prototype.startsWith != 'function') {
         return this.indexOf(str) === 0;
     };
 }
-
