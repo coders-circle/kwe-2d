@@ -194,13 +194,12 @@ $(function () {
                     $('#open-file-dialog').trigger('click');
                     break;
                 case 'menu-save-project':
-                    // @TODO
-                    // add code to save the project
+                    var filename = prompt('Enter save file name', "Untitled");
+                    saveProject(filename);
                     break;
                 case 'menu-export':
-                    prompt('Enter export file name');
-                    // @TODO
-                    // add code for export
+                    var filename = prompt('Enter export file name', "Untitled");
+                    exportProject(filename);
                     break;
             }
         }
@@ -360,6 +359,5 @@ if (typeof String.prototype.startsWith != 'function') {
 
 function onOpenFileDialogChange(){
     var fileInput = document.querySelector('#open-file-dialog');
-    // @TODO
-    // add code to load project
+    loadProject(fileInput.files[0]);
 }
