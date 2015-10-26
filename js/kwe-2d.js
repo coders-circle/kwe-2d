@@ -35,7 +35,7 @@ function refreshSidebar() {
     rightSideBar.nodes = [
         { id: 'resources', text: 'Resources', icon: 'fa fa-folder', expanded: true, group: true,
             nodes: [
-                { id: 'resource-sprites', text: 'Sprites', icon: 'fa fa-folder-o', expanded: true, nodes: spNodes }
+                { id: 'resource-sprites', text: 'Sprites', icon: 'fa fa-folder-o', expanded: true, nodes: spNodes },
             ]
         }
     ];
@@ -170,7 +170,12 @@ $(function () {
                 { text: 'New Project', icon: 'fa fa-home' },
                 { text: 'Open Project', icon: 'icon-page' },
                 { text: 'Close Project', icon: 'icon-page' }
-            ]}
+            ]},
+            { type: 'button', id: 'menu-add-resource', caption: 'Add Resource', icon: 'fa fa-plus',
+                onClick: function(event){
+                    $('#file-new-resource').click();
+                }
+            }
         ]
     });
 
@@ -311,4 +316,8 @@ if (typeof String.prototype.startsWith != 'function') {
     String.prototype.startsWith = function (str){
         return this.indexOf(str) === 0;
     };
+}
+
+function onAddNewResource(){
+    alert($('#file-new-resource').files.length);
 }
