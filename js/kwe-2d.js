@@ -10,6 +10,7 @@ var currentWorld = "World1"; // Change this to change the world
 // Refresh trees on the sidebars
 function refreshSidebar() {
     leftSideBar.nodes = [];
+    rightSideBar.nodes = [];
 
     // for each world, add the world to the left sidebar
     // and for each entity in that world, add the entities as the world's children
@@ -39,6 +40,23 @@ function refreshSidebar() {
             ]
         }
     ];
+
+    rightSideBar.onDblClick = function(event) {
+        if (event.target.startsWith('sprite:')) {
+            var spr = event.target.substring("sprite:".length);
+            var entity_name = prompt("Enter new entity name.");
+
+            // TODO: Check validity of entity_name.
+
+            addSpriteEntity(worlds[currentWorld], entity_name, spr);
+            refreshSidebar();
+            rerenderall();
+        }
+
+    }
+
+    leftSideBar.refresh();
+    rightSideBar.refresh();
 }
 
 function changeProperty(world, entityName, component, property, value) {
@@ -198,8 +216,17 @@ $(function () {
             currentSelection = event.target;
             w2ui['layout'].content('preview', getContent(event.target));
         }
-    })
-    w2ui['layout'].content('right', rightSideBar);
+    });
+    rightlayout = $().w2layout({
+        name: 'right-layout',
+        panels: [
+            { type: 'top', size: '75%', resizable: true },
+            { type: 'bottom', size: '25%', resizable: true }
+        ]
+    });
+    w2ui['right-layout'].content('top', rightSideBar);
+    w2ui['right-layout'].content('bottom', 'Add Sprite:<br/><input type="file" id="sprite_file_selector" onchange="addSpriteFile()">');
+    w2ui['layout'].content('right', rightlayout);
 
 
     addSprite("Player", "assets/katana.png");
@@ -288,28 +315,20 @@ function rerenderall() {
     canvas.renderAll();
 }
 
+function addSpriteFile() {
+    var fileInput = document.querySelector('#sprite_file_selector');
+    var file = fileInput.files[0];
+    openFileAsDataUrl(file, function(url) {
+        var sprite_name = prompt("Enter sprite's name.");
 
+        // TODO: check sprite name validity here: valid identified, if it already exists etc.
 
-$(function() {
+        addSprite(sprite_name, url);
+        refreshSidebar();
+        fileInput.value = "";
+    });
+}
 
-  // for (var i = 0, len = 15; i < len; i++) {
-  //   fabric.Image.fromURL('assets/katana.png', function(img) {
-  //     img.set({
-  //       left: fabric.util.getRandomInt(0, 600),
-  //       top: fabric.util.getRandomInt(0, 500),
-  //       angle: fabric.util.getRandomInt(0, 90)
-  //     });
-
-  //     img.perPixelTargetFind = true;
-  //     img.targetFindTolerance = 4;
-  //     img.hasControls = img.hasBorders = true;
-
-  //     img.scale(fabric.util.getRandomInt(50, 100) / 100);
-
-  //     canvas.add(img);
-  //   });
-  // }
-});
 
 
 if (typeof String.prototype.startsWith != 'function') {
