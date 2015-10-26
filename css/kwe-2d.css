@@ -5,3 +5,7 @@
 .w2ui-panel-content{
     font-size: 0.8em;
 }
+
+.rotate-90-clockwise{
+    transform:rotate(90deg);
+}

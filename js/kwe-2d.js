@@ -184,17 +184,26 @@ $(function () {
     $('#toolbar').w2toolbar({
         name: 'toolbar',
         items: [
-            { type: 'menu',   id: 'menu-file', caption: 'File', icon: 'fa fa-navicon', items: [
-                { text: 'New Project', icon: 'fa fa-home' },
-                { text: 'Open Project', icon: 'icon-page' },
-                { text: 'Close Project', icon: 'icon-page' }
-            ]},
-            { type: 'button', id: 'menu-add-resource', caption: 'Add Resource', icon: 'fa fa-plus',
-                onClick: function(event){
-                    $('#file-new-resource').click();
-                }
+            { type: 'button', id: 'menu-load-project', caption: 'Load Project', icon: 'fa fa-share-square-o rotate-90-clockwise'},
+            { type: 'button', id:'menu-save-project', caption:'Save Project', icon: 'fa fa-floppy-o'},
+            { type: 'button', id:'menu-export', caption:'Export', icon:'fa fa-share-square-o'}
+        ],
+        onClick: function(event) {
+            switch(event.target){
+                case 'menu-load-project':
+                    $('#open-file-dialog').trigger('click');
+                    break;
+                case 'menu-save-project':
+                    // @TODO
+                    // add code to save the project
+                    break;
+                case 'menu-export':
+                    prompt('Enter export file name');
+                    // @TODO
+                    // add code for export
+                    break;
             }
-        ]
+        }
     });
 
     leftSideBar = $().w2sidebar({
@@ -225,7 +234,8 @@ $(function () {
         ]
     });
     w2ui['right-layout'].content('top', rightSideBar);
-    w2ui['right-layout'].content('bottom', 'Add Sprite:<br/><input type="file" id="sprite_file_selector" onchange="addSpriteFile()">');
+    w2ui['right-layout'].content('bottom', '<label style="cursor:pointer"><i class="fa fa-plus"></i> Add Sprite<input style="display:none"type="file" id="sprite_file_selector" onchange="addSpriteFile()"></label>');
+
     w2ui['layout'].content('right', rightlayout);
 
 
@@ -315,6 +325,18 @@ function rerenderall() {
     canvas.renderAll();
 }
 
+function onMenuClick(id, menu_index, event){
+    alert('yay!');
+}
+
+function onMenuLoadProject(){
+
+}
+
+function onMenuLoadProjectChange(){
+
+}
+
 function addSpriteFile() {
     var fileInput = document.querySelector('#sprite_file_selector');
     var file = fileInput.files[0];
@@ -330,13 +352,14 @@ function addSpriteFile() {
 }
 
 
-
 if (typeof String.prototype.startsWith != 'function') {
     String.prototype.startsWith = function (str){
         return this.indexOf(str) === 0;
     };
 }
 
-function onAddNewResource(){
-    alert($('#file-new-resource').files.length);
+function onOpenFileDialogChange(){
+    var fileInput = document.querySelector('#open-file-dialog');
+    // @TODO
+    // add code to load project
 }
