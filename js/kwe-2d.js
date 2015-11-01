@@ -97,19 +97,34 @@ function getContent(id) {
         content = '<b>' + name + '</b><br/>';
 
         content += 'Width: ' + sprite.width + '&nbsp;&nbsp;&nbsp;';
-        content += 'Height: ' + sprite.height + '<br/>';
+        content += 'Height: ' + sprite.height + '<br/><br/>';
 
         content += 'Shape: <br/>';
         
         var changeshape = "sprites." + name + ".shape.type=this.value;"
                         + "w2ui['layout'].content('preview', getContent(currentSelection));";
-        content += "<input type='radio' name='shape_type' value='box' oninput='" + changeshape + "' "
-                    + (sprite.shape.type=="box"?"checked='checked'":"")    + ">Box &nbsp;";
-        content += "<input type='radio' name='shape_type' value='polygon' oninput='" + changeshape + "' "
+        content += "<input type='radio' name='shape_type' value='box' onclick=\"" + changeshape + "\" "
+                    + (sprite.shape.type=="box"?"checked='checked'":"")    + ">Box &nbsp;"
+        content += "<input type='radio' name='shape_type' value='polygon' onclick=\"" + changeshape + "\" "
                     + (sprite.shape.type=="polygon"?"checked='checked'":"")    + ">Polygon &nbsp;";
-        content += "<input type='radio' name='shape_type' value='circle' oninput='" + changeshape + "' "
+        content += "<input type='radio' name='shape_type' value='circle' onclick=\"" + changeshape + "\" "
                     + (sprite.shape.type=="circle"?"checked='checked'":"")    + ">Circle &nbsp;";
-
+        
+        content += "<br/><br/>";
+        if (sprite.shape.type == "box") {
+            var eventstr = "oninput='sprites." + name + ".shape.width=this.value;'";
+            content += "Width: <input " + eventstr + " type='number' value='" + sprite.shape.width + "' step='0.1' style='width: 90px;'>";
+            eventstr = "oninput='sprites." + name + ".shape.height=this.value;'";
+            content += " Height: <input " + eventstr + " type='number' value='" + sprite.shape.height + "' step='0.1' style='width: 90px;'>";
+        }
+        else if (sprite.shape.type == "circle") {
+            var eventstr = "oninput='sprites." + name + ".shape.radius=this.value;'";
+            content += "Radius: <input " + eventstr + " type='number' value='" + sprite.shape.radius + "' step='0.1' style='width: 90px;'>";
+        }
+        else if (sprite.shape.type == "polygon") {
+            var eventstr = "oninput='sprites." + name + ".shape.points=this.value;'";
+            content += "Points: <input " + eventstr + " value='" + sprite.shape.points + "' style='width: 390px;'>";
+        }
         // var eventstr = "oninput='sprites." + name + ".width=this.value;'";
         // content += "<input " + eventstr + " type='number' value='" + sprite.width + "' step='0.1' style='width: 90px;'>"
     }
@@ -249,15 +264,20 @@ $(function () {
         onClick: function (event) {
             currentSelection = event.target;
             w2ui['layout'].content('preview', getContent(event.target));
-
-            // TODO: set the preview image in spritePreviewCanvas
+            
+            if (event.target.startsWith('sprite:')) {
+                var sprite = sprites[currentSelection.substring('sprite:'.length)];
+                spritePreviewCanvas.clear();
+                spritePreviewCanvas.add(sprite.img);
+                spritePreviewCanvas.renderAll();
+            }
         }
     });
     rightlayout = $().w2layout({
         name: 'right-layout',
         panels: [
             { type: 'top', size: '90%', resizable: true },
-            { type: 'preview', size: '200px', resizable: true },
+            { type: 'preview', size: '200px', style:pstyle, resizable: true },
             { type: 'bottom', size: '10%', resizable: true }
         ]
     });
