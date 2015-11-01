@@ -86,9 +86,34 @@ function changeProperty(world, entityName, component, property, value) {
 // get the content to display in the bottom "Properties" pane
 function getContent(id) {
     var content = "";
+    
+    // for the sprite, display the collision shape properties
+    if (id.startsWith("sprite:")) {
+        var name = id.substring("sprite:".length);
 
+        var sprite = sprites[name];
+
+        content = '<b>' + name + '</b><br/>';
+
+        content += 'Width: ' + sprite.width + '&nbsp;&nbsp;&nbsp;';
+        content += 'Height: ' + sprite.height + '<br/>';
+
+        content += 'Shape: <br/>';
+        
+        var changeshape = "sprites." + name + ".shape.type=this.value;"
+                        + "w2ui['layout'].content('preview', getContent(currentSelection));";
+        content += "<input type='radio' name='shape_type' value='box' oninput='" + changeshape + "' "
+                    + (sprite.shape.type=="box"?"checked='checked'":"")    + ">Box &nbsp;";
+        content += "<input type='radio' name='shape_type' value='polygon' oninput='" + changeshape + "' "
+                    + (sprite.shape.type=="polygon"?"checked='checked'":"")    + ">Polygon &nbsp;";
+        content += "<input type='radio' name='shape_type' value='circle' oninput='" + changeshape + "' "
+                    + (sprite.shape.type=="circle"?"checked='checked'":"")    + ">Circle &nbsp;";
+
+        // var eventstr = "oninput='sprites." + name + ".width=this.value;'";
+        // content += "<input " + eventstr + " type='number' value='" + sprite.width + "' step='0.1' style='width: 90px;'>"
+    }
     // for the entity, display the components
-    if (id.startsWith("entity:")) {
+    else if (id.startsWith("entity:")) {
 
         var names = id.substring("entity:".length).split(':');
 
@@ -238,15 +263,15 @@ $(function () {
     w2ui['layout'].content('right', rightlayout);
 
 
-    addSprite("Player", "assets/katana.png");
-    addSprite("Ground", "assets/katana.png");
+    // addSprite("Player", "assets/katana.png");
+    // addSprite("Ground", "assets/katana.png");
 
     var w1 = addWorld("World1");
-    addSpriteEntity(w1, "Player", "Player");
-    addSpriteEntity(w1, "Ground", "Ground");
+    // addSpriteEntity(w1, "Player", "Player");
+    // addSpriteEntity(w1, "Ground", "Ground");
 
-    var w2 = addWorld("World2");
-    addEntity(w2, "Player");
+    // var w2 = addWorld("World2");
+    // addEntity(w2, "Player");
 
     refreshSidebar();
 
@@ -322,18 +347,6 @@ function rerenderall() {
     }
 
     canvas.renderAll();
-}
-
-function onMenuClick(id, menu_index, event){
-    alert('yay!');
-}
-
-function onMenuLoadProject(){
-
-}
-
-function onMenuLoadProjectChange(){
-
 }
 
 function addSpriteFile() {
