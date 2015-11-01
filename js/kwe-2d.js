@@ -2,6 +2,7 @@
 var leftSideBar;
 var rightSideBar
 var canvas;
+var spritePreviewCanvas;
 
 var currentSelection;
 var currentWorld = "World1"; // Change this to change the world
@@ -193,7 +194,7 @@ var selectedComponent;
 $(function () {
     var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
     var toolbar = '<div id="toolbar"></div>'
-    var drawingContent = '<canvas id="c"  width="1200" height="450"></canvas>';
+    var drawingContent = '<canvas id="c"  width="1200" height="350"></canvas>';
     $('#homepage').w2layout({
         name: 'layout',
         panels: [
@@ -248,17 +249,21 @@ $(function () {
         onClick: function (event) {
             currentSelection = event.target;
             w2ui['layout'].content('preview', getContent(event.target));
+
+            // TODO: set the preview image in spritePreviewCanvas
         }
     });
     rightlayout = $().w2layout({
         name: 'right-layout',
         panels: [
-            { type: 'top', size: '75%', resizable: true },
-            { type: 'bottom', size: '25%', resizable: true }
+            { type: 'top', size: '90%', resizable: true },
+            { type: 'preview', size: '200px', resizable: true },
+            { type: 'bottom', size: '10%', resizable: true }
         ]
     });
     w2ui['right-layout'].content('top', rightSideBar);
     w2ui['right-layout'].content('bottom', '<label style="cursor:pointer"><i class="fa fa-plus"></i> Add Sprite<input style="display:none"type="file" id="sprite_file_selector" onchange="addSpriteFile()"></label>');
+    w2ui['right-layout'].content('preview', '<canvas id="canvas-sprite-preview" width="140" height="140"></canvas>');
 
     w2ui['layout'].content('right', rightlayout);
 
@@ -279,6 +284,8 @@ $(function () {
         hoverCursor: 'pointer',
         selection: false
     });
+
+    spritePreviewCanvas = new fabric.Canvas('canvas-sprite-preview');
 
     canvas.on({
         'object:moving': function(e) {

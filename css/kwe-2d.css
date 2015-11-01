@@ -9,3 +9,7 @@
 .rotate-90-clockwise{
     transform:rotate(90deg);
 }
+
+#canvas-sprite-preview{
+    margin-top: 20px;
+}
