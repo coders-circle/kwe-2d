@@ -283,58 +283,57 @@ $(function () {
     });
     w2ui['right-layout'].content('top', rightSideBar);
     w2ui['right-layout'].content('bottom', '<label style="cursor:pointer"><i class="fa fa-plus"></i> Add Sprite<input style="display:none"type="file" id="sprite_file_selector" onchange="addSpriteFile()"></label>');
-    w2ui['right-layout'].content('preview', '<canvas id="canvas-sprite-preview" width="140" height="140"></canvas>');
+    w2ui['right-layout'].content('preview','<canvas id="canvas-sprite-preview" width="140px" height="140px"></canvas>');
+
 
     w2ui['layout'].content('right', rightlayout);
 
 
-    // addSprite("Player", "assets/katana.png");
-    // addSprite("Ground", "assets/katana.png");
-
     var w1 = addWorld("World1");
-    // addSpriteEntity(w1, "Player", "Player");
-    // addSpriteEntity(w1, "Ground", "Ground");
-
-    // var w2 = addWorld("World2");
-    // addEntity(w2, "Player");
 
     refreshSidebar();
+    
+    w2ui.layout.on('refresh', function(event) {
+        event.onComplete = function() {
+            canvas = new fabric.Canvas('c', {
+                hoverCursor: 'pointer',
+                selection: false
+            });
 
-    canvas = new fabric.Canvas('c', {
-        hoverCursor: 'pointer',
-        selection: false
-    });
+            spritePreviewCanvas = new fabric.Canvas('canvas-sprite-preview');
 
-    spritePreviewCanvas = new fabric.Canvas('canvas-sprite-preview');
+            canvas.on({
+                'object:moving': function(e) {
+                    e.target.opacity = 0.5;
+                },
+                'object:selected': function(e) {
+                    if (e.target.entity != undefined) {
+                        currentSelection = "entity:" + currentWorld + ":" + e.target.entity.name;
+                        w2ui['layout'].content('preview', getContent(currentSelection));
+                    }
+                },
+                'object:modified': function(e) {
+                    e.target.opacity = 1;
 
-    canvas.on({
-        'object:moving': function(e) {
-            e.target.opacity = 0.5;
-        },
-        'object:selected': function(e) {
-            if (e.target.entity != undefined) {
-                currentSelection = "entity:" + currentWorld + ":" + e.target.entity.name;
-                w2ui['layout'].content('preview', getContent(currentSelection));
-            }
-        },
-        'object:modified': function(e) {
-            e.target.opacity = 1;
+                    if (e.target.entity != undefined) {
+                        var tcomp = e.target.entity.components["Transformation"];
+                        tcomp["Translate-X"] = e.target.left;
+                        tcomp["Translate-Y"] = e.target.top;
+                        tcomp["Scale-X"] = e.target.scaleX;
+                        tcomp["Scale-Y"] = e.target.scaleY;
+                        tcomp["Angle"] = e.target.angle;
 
-            if (e.target.entity != undefined) {
-                var tcomp = e.target.entity.components["Transformation"];
-                tcomp["Translate-X"] = e.target.left;
-                tcomp["Translate-Y"] = e.target.top;
-                tcomp["Scale-X"] = e.target.scaleX;
-                tcomp["Scale-Y"] = e.target.scaleY;
-                tcomp["Angle"] = e.target.angle;
+                        if (currentSelection != undefined)
+                            w2ui['layout'].content('preview', getContent(currentSelection));
+                    }
+                }
+            });
 
-                if (currentSelection != undefined)
-                    w2ui['layout'].content('preview', getContent(currentSelection));
-            }
+            rerenderall();
         }
     });
 
-    rerenderall();
+    w2ui['layout'].refresh();
 });
 
 function createImage(entity) {
@@ -400,4 +399,9 @@ if (typeof String.prototype.startsWith != 'function') {
 function onOpenFileDialogChange(){
     var fileInput = document.querySelector('#open-file-dialog');
     loadProject(fileInput.files[0]);
+}
+
+// prompt before user leaves the page
+window.onbeforeunload = function() {
+    return 'Any unsaved changes will be lost.';
 }
