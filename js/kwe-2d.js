@@ -348,48 +348,45 @@ $(function () {
 
     refreshSidebar();
     
-    w2ui.layout.on('refresh', function(event) {
+    w2ui['right-layout'].on('refresh', function(event) {
         event.onComplete = function() {
-            canvas = new fabric.Canvas('c', {
-                hoverCursor: 'pointer',
-                selection: false
-            });
-
-            spritePreviewCanvas = new fabric.Canvas('canvas-sprite-preview');
-
-            canvas.on({
-                'object:moving': function(e) {
-                    e.target.opacity = 0.5;
-                },
-                'object:selected': function(e) {
-                    if (e.target.entity != undefined) {
-                        currentSelection = "entity:" + currentWorld + ":" + e.target.entity.name;
-                        w2ui['layout'].content('preview', getContent(currentSelection));
-                    }
-                },
-                'object:modified': function(e) {
-                    e.target.opacity = 1;
-
-                    if (e.target.entity != undefined) {
-                        var tcomp = e.target.entity.components["Transformation"];
-                        tcomp["Translate-X"] = e.target.left;
-                        tcomp["Translate-Y"] = e.target.top;
-                        tcomp["Scale-X"] = e.target.scaleX;
-                        tcomp["Scale-Y"] = e.target.scaleY;
-                        tcomp["Angle"] = e.target.angle;
-
-                        if (currentSelection != undefined)
-                            w2ui['layout'].content('preview', getContent(currentSelection));
-                    }
-                }
-            });
-
-            rerenderall();
+            spritePreviewCanvas = new fabric.StaticCanvas('canvas-sprite-preview');
         }
     });
+    
+    canvas = new fabric.Canvas('c', {
+        hoverCursor: 'pointer',
+        selection: false
+    });
+    canvas.on({
+        'object:moving': function(e) {
+            e.target.opacity = 0.5;
+        },
+        'object:selected': function(e) {
+            if (e.target.entity != undefined) {
+                currentSelection = "entity:" + currentWorld + ":" + e.target.entity.name;
+                w2ui['layout'].content('preview', getContent(currentSelection));
+            }
+        },
+        'object:modified': function(e) {
+            e.target.opacity = 1;
 
-    w2ui['layout'].refresh();
+            if (e.target.entity != undefined) {
+                var tcomp = e.target.entity.components["Transformation"];
+                tcomp["Translate-X"] = e.target.left;
+                tcomp["Translate-Y"] = e.target.top;
+                tcomp["Scale-X"] = e.target.scaleX;
+                tcomp["Scale-Y"] = e.target.scaleY;
+                tcomp["Angle"] = e.target.angle;
+
+                if (currentSelection != undefined)
+                    w2ui['layout'].content('preview', getContent(currentSelection));
+            }
+        }
+    });
+    rerenderall();
 });
+
 
 function createImage(entity) {
     var sprite = sprites[entity.components["Sprite"]["Sprite"]];
