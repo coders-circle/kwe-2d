@@ -14,16 +14,23 @@ var sprites = {};
 
 var worlds = {};
 
-function saveProject(filename) {
-    data = { "components": components, "sprites":sprites, "worlds":worlds };
-    text = JSON.stringify(data);
-    var blob = new Blob([text], {type: "application/json"});
-    var url  = URL.createObjectURL(blob);
-    
-    var a = document.createElement('a');
-    a.download    = filename + ".json";
-    a.href        = url;
-    a.click();
+function saveProject() {
+    var filename = $("#projectname").val();
+    var data = { "components": components, "sprites":sprites, "worlds":worlds };
+    var text = JSON.stringify(data);
+
+    $.post("upload.php", {filename:filename, data:text}, 
+        function(data) {
+            alert(data);
+        });
+
+    //var blob = new Blob([text], {type: "application/json"});
+    //var url  = URL.createObjectURL(blob);
+    //
+    //var a = document.createElement('a');
+    //a.download    = filename + ".json";
+    //a.href        = url;
+    //a.click();
 }
 
 function exportProject(filename) {
@@ -68,19 +75,40 @@ function exportProject(filename) {
     a.click();
 }
 
-function loadProject(file) {
-    var reader = new FileReader();
-    reader.onload = function() {
-        var result = JSON.parse(reader.result);
-
-        components = result.components;
-        sprites = result.sprites;
-        worlds = result.worlds;
-        refreshSidebar();
-        rerenderall();
-    }
-    reader.readAsText(file);
+function loadProject(filename) {
+    $.post("loadproject.php", {filename:filename}, 
+        function(data) {
+            if (data.startsWith("Invalid"))
+                alert(data);
+            else {
+                try {
+                    var result = JSON.parse(data);
+        
+                    components = result.components;
+                    sprites = result.sprites;
+                    worlds = result.worlds;
+                    refreshSidebar();
+                    rerenderall();
+                } catch(e) {
+                    alert("Error loading project");
+                }
+            }
+        });
 }
+
+//function loadProject(file) {
+//    var reader = new FileReader();
+//    reader.onload = function() {
+//        var result = JSON.parse(reader.result);
+//
+//        components = result.components;
+//        sprites = result.sprites;
+//        worlds = result.worlds;
+//        refreshSidebar();
+//        rerenderall();
+//    }
+//    reader.readAsText(file);
+//}
 
 function loadCDF(jsonFile) {
     var reader = new FileReader();

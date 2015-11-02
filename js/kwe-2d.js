@@ -290,16 +290,20 @@ $(function () {
         items: [
             { type: 'button', id: 'menu-load-project', caption: 'Load Project', icon: 'fa fa-share-square-o rotate-90-clockwise'},
             { type: 'button', id:'menu-save-project', caption:'Save Project', icon: 'fa fa-floppy-o'},
-            { type: 'button', id:'menu-export', caption:'Export', icon:'fa fa-share-square-o'}
+            { type: 'button', id:'menu-export', caption:'Export', icon:'fa fa-share-square-o'},
+            { type: 'break'},
+            { type: 'html', html:' Project name: <input id="projectname">'},
         ],
         onClick: function(event) {
             switch(event.target){
                 case 'menu-load-project':
-                    $('#open-file-dialog').trigger('click');
+                    //$('#open-file-dialog').trigger('click');
+                    var filename = prompt("Enter project name to load");
+                    loadProject(filename);
                     break;
                 case 'menu-save-project':
-                    var filename = prompt('Enter save file name', "Untitled");
-                    saveProject(filename);
+                    //var filename = prompt('Enter save file name', "Untitled");
+                    saveProject();
                     break;
                 case 'menu-export':
                     var filename = prompt('Enter export file name', "Untitled");
@@ -385,6 +389,8 @@ $(function () {
         }
     });
     rerenderall();
+
+    $('#projectname').val("untitled");
 });
 
 
