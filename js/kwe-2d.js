@@ -6,6 +6,7 @@ var spritePreviewCanvas;
 
 var currentSelection;
 var currentWorld = "World1"; // Change this to change the world
+var selectedComponent;
 
 
 // Refresh trees on the sidebars
@@ -45,7 +46,9 @@ function refreshSidebar() {
     rightSideBar.onDblClick = function(event) {
         if (event.target.startsWith('sprite:')) {
             var spr = event.target.substring("sprite:".length);
-            var entity_name = prompt("Enter new entity name.");
+            var entity_name = prompt("Enter new entity name.", "my_entity");
+            if (entity_name == null)
+                return;
 
             // TODO: Check validity of entity_name.
 
@@ -102,7 +105,7 @@ function getContent(id) {
         content += 'Shape: <br/>';
         
         var changeshape = "sprites." + name + ".shape.type=this.value;"
-                        + "w2ui['layout'].content('preview', getContent(currentSelection));";
+                        + "selectSprite(currentSelection);";
         content += "<input type='radio' name='shape_type' value='box' onclick=\"" + changeshape + "\" "
                     + (sprite.shape.type=="box"?"checked='checked'":"")    + ">Box &nbsp;"
         content += "<input type='radio' name='shape_type' value='polygon' onclick=\"" + changeshape + "\" "
@@ -112,17 +115,17 @@ function getContent(id) {
         
         content += "<br/><br/>";
         if (sprite.shape.type == "box") {
-            var eventstr = "oninput='sprites." + name + ".shape.width=this.value;'";
+            var eventstr = "oninput='sprites." + name + ".shape.width=Number(this.value); refreshSpritePreview();'";
             content += "Width: <input " + eventstr + " type='number' value='" + sprite.shape.width + "' step='0.1' style='width: 90px;'>";
-            eventstr = "oninput='sprites." + name + ".shape.height=this.value;'";
+            eventstr = "oninput='sprites." + name + ".shape.height=Number(this.value); refreshSpritePreview();'";
             content += " Height: <input " + eventstr + " type='number' value='" + sprite.shape.height + "' step='0.1' style='width: 90px;'>";
         }
         else if (sprite.shape.type == "circle") {
-            var eventstr = "oninput='sprites." + name + ".shape.radius=this.value;'";
+            var eventstr = "oninput='sprites." + name + ".shape.radius=Number(this.value); refreshSpritePreview();'";
             content += "Radius: <input " + eventstr + " type='number' value='" + sprite.shape.radius + "' step='0.1' style='width: 90px;'>";
         }
         else if (sprite.shape.type == "polygon") {
-            var eventstr = "oninput='sprites." + name + ".shape.points=this.value;'";
+            var eventstr = "oninput='sprites." + name + ".shape.points=this.value; refreshSpritePreview();'";
             content += "Points: <input " + eventstr + " value='" + sprite.shape.points + "' style='width: 390px;'>";
         }
         // var eventstr = "oninput='sprites." + name + ".width=this.value;'";
@@ -204,7 +207,67 @@ function getContent(id) {
     return content;
 }
 
-var selectedComponent;
+function parsePoints(pstr) {
+    points = [];
+    pstr_array = pstr.match(/\([\d|\.|,]*\)/g);
+    for (var i in pstr_array) {
+        var str = pstr_array[i];
+        var point = {x:0, y:0};
+        
+        vals = str.match(/[\d|\.]+/g);
+        point.x = Number(vals[0]);
+        point.y = Number(vals[1]);
+        points.push(point);
+    }
+    return points;
+}
+
+function refreshSpritePreview() {
+    if (currentSelection.startsWith('sprite:')) {
+        var sprite = sprites[currentSelection.substring('sprite:'.length)];
+        spritePreviewCanvas.clear();
+        spritePreviewCanvas.add(sprite.img);
+
+        if (sprite.shape.type == 'box') {
+            var rect = new fabric.Rect({
+                left: sprite.width/2, top: sprite.height/2,
+                width: sprite.shape.width,
+                height: sprite.shape.height,
+                originX: 'center', originY: 'center',
+                fill: 'transparent',
+                stroke: 'black', strokeWidth:2,
+            });
+            spritePreviewCanvas.add(rect);
+        }
+        else if (sprite.shape.type == 'circle') {
+            var circle = new fabric.Circle({
+                left: sprite.width/2, top:sprite.height/2,
+                radius: sprite.shape.radius,
+                originX: 'center', originY: 'center',
+                fill: 'transparent',
+                stroke: 'black', strokeWidth:2,
+            });
+            spritePreviewCanvas.add(circle);
+        }
+        else if (sprite.shape.type == 'polygon') {
+            var circle = new fabric.Polygon(parsePoints(sprite.shape.points),{
+                left: sprite.width/2, top:sprite.height/2,
+                originX: 'center', originY: 'center',
+                fill: 'transparent',
+                stroke: 'black', strokeWidth:2,
+            });
+            spritePreviewCanvas.add(circle);
+        }
+
+        spritePreviewCanvas.renderAll();
+    }
+}
+
+function selectSprite(target) {
+    currentSelection = target;
+    w2ui['layout'].content('preview', getContent(target));
+    refreshSpritePreview();
+}
 
 $(function () {
     var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
@@ -262,15 +325,7 @@ $(function () {
         img: null,
         nodes: [],
         onClick: function (event) {
-            currentSelection = event.target;
-            w2ui['layout'].content('preview', getContent(event.target));
-            
-            if (event.target.startsWith('sprite:')) {
-                var sprite = sprites[currentSelection.substring('sprite:'.length)];
-                spritePreviewCanvas.clear();
-                spritePreviewCanvas.add(sprite.img);
-                spritePreviewCanvas.renderAll();
-            }
+            selectSprite(event.target);
         }
     });
     rightlayout = $().w2layout({
@@ -379,13 +434,15 @@ function addSpriteFile() {
     var fileInput = document.querySelector('#sprite_file_selector');
     var file = fileInput.files[0];
     openFileAsDataUrl(file, function(url) {
-        var sprite_name = prompt("Enter sprite's name.");
+        fileInput.value = "";
+        var sprite_name = prompt("Enter sprite's name.", "my_sprite");
+        if (sprite_name == null)
+            return;
 
         // TODO: check sprite name validity here: valid identified, if it already exists etc.
 
         addSprite(sprite_name, url);
         refreshSidebar();
-        fileInput.value = "";
     });
 }
 

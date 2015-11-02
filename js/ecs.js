@@ -112,7 +112,7 @@ function addSprite(sprite_name, file_name) {
         sprite.shape.width = w;
         sprite.shape.height = h;
         sprite.shape.radius = (w>h)?w:h;
-        sprite.shape.points = "(0,0), (0,"+h+"), ("+w+",0), ("+w+","+h+")";
+        sprite.shape.points = "(0,0), (0,"+h+"), ("+w+","+h+"), ("+w+",0)";
     });
     sprites[sprite_name] = sprite;
 }
