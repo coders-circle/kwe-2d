@@ -306,7 +306,8 @@ $(function () {
                     saveProject();
                     break;
                 case 'menu-export':
-                    var filename = prompt('Enter export file name', "Untitled");
+                    // var filename = prompt('Enter export file name', "Untitled");
+                    var filename = $("#projectname").val();
                     exportProject(filename);
                     break;
             }
@@ -411,6 +412,8 @@ function createImage(entity) {
             targetFindTolerance: 4,
             hasControls: true,
             hasBorders: true,
+            // lockScalingX: true,
+            // lockScalingY: true,
         });
 
         img.entity = entity;

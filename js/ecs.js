@@ -4,7 +4,7 @@ var components = {
                     "Transformation": { "Translate-X":0.0, "Translate-Y":0.0, "Scale-X":1.0, "Scale-Y":1.0, "Angle":0.0 },
 //                     "BoxShape": { "Width": 0.0, "Height": 0.0 },
 //                     "PolygonShape": { "Points": "" },
-                    "RigidBody": { "Density": 0.0, "Friction":0.2, "Restitution":0 },
+                    "RigidBody": { "Type":["Static", "Dynamic", "Kinematic"], "Density": 0.0, "Friction":0.2, "Restitution":0 },
 
                     // Definition is of form:
                     // "Component-Name": { "Property-Name": "Property-Type", "Choice-Property": [ "Value1", "Value2", ...], ... },
@@ -38,7 +38,7 @@ function exportProject(filename) {
     for (s in sprites) {
         spr = {}
         for (k in sprites[s]) {
-            if (k != "file")
+            if (k != "file" && k != "img")
                 spr[k] = sprites[s][k];
         }
         newsprites[s] = spr;
@@ -89,6 +89,8 @@ function loadProject(filename) {
                     worlds = result.worlds;
                     refreshSidebar();
                     rerenderall();
+
+                    $("#projectname").val(filename);
                 } catch(e) {
                     alert("Error loading project");
                 }
@@ -139,7 +141,7 @@ function addSprite(sprite_name, file_name) {
         sprite.height = h;
         sprite.shape.width = w;
         sprite.shape.height = h;
-        sprite.shape.radius = (w>h)?w:h;
+        sprite.shape.radius = (w>h)?w/2:h/2;
         sprite.shape.points = "(0,0), (0,"+h+"), ("+w+","+h+"), ("+w+",0)";
     });
     sprites[sprite_name] = sprite;
