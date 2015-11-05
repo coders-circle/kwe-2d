@@ -23,6 +23,19 @@ function addSpriteFile() {
     });
 }
 
+function deleteSelectedSprite() {
+    //var target = rightSideBar.selected;
+    var target = currentSelection;
+    if (target.startsWith('sprite:')) {
+        deleteSprite(target.substring('sprite:'.length));
+
+        currentSelection = "";
+
+        refreshSidebar();
+        rerenderall();
+    }
+}
+
 function getSpriteContent(id) {
     var content = "";
     // for the sprite, display the collision shape properties
@@ -65,6 +78,7 @@ function getSpriteContent(id) {
     // var eventstr = "oninput='sprites." + name + ".width=this.value;'";
     // content += "<input " + eventstr + " type='number' value='" + sprite.width + "' step='0.1' style='width: 90px;'>"
     
+    return content;
 }
 
 function parsePoints(pstr) {

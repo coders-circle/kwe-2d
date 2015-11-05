@@ -24,6 +24,20 @@ function addNewEntity(spr) {
     rerenderall();
 }
 
+function deleteSelectedEntity() {
+    var target = currentSelection;
+    if (target.startsWith('entity:')) {
+        var names = target.substring("entity:".length).split(':');
+
+        deleteEntity(worlds[names[0]], names[1]);
+
+        currentSelection = "";
+
+        refreshSidebar();
+        rerenderall();
+    }
+}
+
 function addNewWorld() {
     var exists;
     do {

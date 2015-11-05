@@ -28,16 +28,12 @@ function refreshSidebar() {
 
     // for each sprite, add it to the right sidebar
     for (var sprite in sprites) {
-        var spNode = { id: "sprite:" + sprite, text: sprite, icon: 'fa fa-file-image-o', nodes:[] };
+        var spNode = { id: "sprite:" + sprite, text: sprite, icon: 'fa fa-file-image-o', nodes:[], expanded: true };
         spNodes.push(spNode);
     }
 
     rightSideBar.nodes = [
-        { id: 'resources', text: 'Resources', icon: 'fa fa-folder', expanded: true, group: true,
-            nodes: [
-                { id: 'resource-sprites', text: 'Sprites', icon: 'fa fa-folder-o', expanded: true, nodes: spNodes },
-            ]
-        }
+        { id: 'resource-sprites', text: 'Sprites', icon: 'fa fa-folder', expanded: true, group: true, nodes: spNodes }
     ];
 
     rightSideBar.onDblClick = function(event) {
@@ -60,6 +56,27 @@ function refreshSidebar() {
     });
 
     $("#worlds").val(currentWorld);
+
+    if (currentSelection != undefined) {
+        if (currentSelection.startsWith('sprite:')) {
+            selectSprite(currentSelection.substring('sprite:'.length));
+            rightSideBar.select(currentSelection);
+        }
+        else if (currentSelection.startsWith('entity')) {
+            var names = currentSelection.substring("entity:".length).split(':');
+            if (names[0] != currentWorld)
+                w2ui['layout'].content('preview', '');
+            else {
+                w2ui['layout'].content('preview', getContent(currentSelection));
+                leftSideBar.select(currentSelection);
+            }
+        }
+        else {
+            spritePreviewCanvas.clear();
+            spritePreviewCanvas.renderAll();
+            w2ui['layout'].content('preview', '');
+        }
+    }
 }
 
 // get the content to display in the bottom "Properties" pane
@@ -97,26 +114,29 @@ $(function () {
             { type: 'break'},
             { type: 'html', html:' Worlds: <select id="worlds" oninput="changeWorld(this.value);"></select>'},
             { type: 'button', id:'add-world', icon: 'fa fa-plus'},
+            { type: 'button', id:'remove-world', icon: 'fa fa-minus'},
         ],
         onClick: function(event) {
             switch(event.target){
                 case 'menu-load-project':
                     loadDialog();
-                    //$('#open-file-dialog').trigger('click');
-                    //var filename = prompt("Enter project name to load");
-                    //loadProject(filename);
                     break;
                 case 'menu-save-project':
-                    //var filename = prompt('Enter save file name', "Untitled");
                     saveProject();
                     break;
                 case 'menu-export':
-                    // var filename = prompt('Enter export file name', "Untitled");
                     var filename = $("#projectname").val();
                     exportProject(filename);
                     break;
                 case 'add-world':
                     addNewWorld();
+                    break;
+                case 'remove-world':
+                    deleteWorld(currentWorld);
+                    $("#worlds option[value='" + currentWorld + "']").remove();
+                    currentWorld = $("#worlds").val();
+                    refreshSidebar();
+                    rerenderall();
                     break;
             }
         }
@@ -129,7 +149,9 @@ $(function () {
         onClick: function (event) {
             currentSelection = event.target;
             w2ui['layout'].content('preview', getContent(event.target));
-        }
+        },
+        topHTML: '&nbsp;<label style="cursor:pointer"><i class="fa fa-plus"></i><input style="display:none" type="button" id="entity_add" onclick=""></label> &nbsp;&nbsp;'
+            + '&nbsp;<label style="cursor:pointer"><i class="fa fa-minus"></i><input style="display:none" type="button" id="entity_delete" onclick="deleteSelectedEntity()"></label>',
     });
     w2ui['layout'].content('left', leftSideBar);
 
@@ -139,19 +161,20 @@ $(function () {
         nodes: [],
         onClick: function (event) {
             selectSprite(event.target);
-        }
+        },
+        topHTML: '&nbsp;<label style="cursor:pointer"><i class="fa fa-plus"></i><input style="display:none"type="file" id="sprite_file_selector" onchange="addSpriteFile()"></label> &nbsp;&nbsp;'
+            + '&nbsp;<label style="cursor:pointer"><i class="fa fa-minus"></i><input style="display:none" type="button" id="sprite_delete" onclick="deleteSelectedSprite()"></label>',
     });
     rightlayout = $().w2layout({
         name: 'right-layout',
         panels: [
-            { type: 'top', size: '90%', resizable: true },
-            { type: 'preview', size: '200px', style:pstyle, resizable: true },
-            { type: 'bottom', size: '10%', resizable: true }
+            { type: 'top', size: '50%', resizable: true },
+            { type: 'main', },
         ]
     });
+
     w2ui['right-layout'].content('top', rightSideBar);
-    w2ui['right-layout'].content('bottom', '<label style="cursor:pointer"><i class="fa fa-plus"></i> Add Sprite<input style="display:none"type="file" id="sprite_file_selector" onchange="addSpriteFile()"></label>');
-    w2ui['right-layout'].content('preview','<canvas id="canvas-sprite-preview" width="140px" height="140px"></canvas>');
+    w2ui['right-layout'].content('main','<canvas id="canvas-sprite-preview" style="width:100%;" height="140px"></canvas>');
 
 
     w2ui['layout'].content('right', rightlayout);
