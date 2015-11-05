@@ -36,6 +36,31 @@ function deleteSelectedSprite() {
     }
 }
 
+function renameSelectedSprite() {
+    var target = currentSelection;
+    if (target.startsWith('sprite:')) {
+        var names = target.substring('sprite:'.length);
+        var exists;
+        do {
+            var sprite_name = prompt("Enter new sprite name.", names);
+            if (sprite_name == null || sprite_name == names)
+                return;
+            
+            // TODO: check sprite name validity here
+
+            exists = existSprite(sprite_name);
+            if (exists)
+                alert("Sprite name already exists");
+        } while (exists);
+        
+        renameSprite(names, sprite_name);
+        currentSelection = 'sprite:'+sprite_name;
+
+        refreshSidebar();
+        rerenderall();
+    }
+}
+
 function getSpriteContent(id) {
     var content = "";
     // for the sprite, display the collision shape properties

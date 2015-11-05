@@ -25,6 +25,7 @@ function addSprite(sprite_name, file_name) {
     var sprite = { "file": file_name, "width": 64, "height": 64,
                              "shape":{"type":"box", "width":64, "height":64} };
     components["Sprite"]["Sprite"].push(sprite_name);
+    components["Sprite"]["Sprite"].sort();
     fabric.Image.fromURL(file_name, function(img) {
         sprite.img = img;
         var w = img.getWidth();
@@ -43,6 +44,29 @@ function deleteSprite(sprite_name) {
     delete sprites[sprite_name];
 }
 
+function renameSprite(currentName, newName) {
+    sprites[newName] = sprites[currentName];
+    delete sprites[currentName];
+
+    components["Sprite"]["Sprite"].splice(components["Sprite"]["Sprite"].indexOf(currentName), 1);
+    components["Sprite"]["Sprite"].push(newName);
+    components["Sprite"]["Sprite"].sort();
+    for (var w in worlds)
+        for (var e in worlds[w].entities) {
+            var entity = worlds[w].entities[e];
+            if ("Sprite" in entity.components  && entity.components.Sprite.Sprite == currentName) 
+                entity.components.Sprite.Sprite = newName;
+        }
+}
+
+function getSprites() {
+    var list = [];
+    for (var s in sprites)
+        list.push(s);
+    list.sort();
+    return list;
+}
+
 function addWorld(world_name) {
     var world = { "entities": {}, };
     worlds[world_name] = world;
@@ -53,6 +77,13 @@ function deleteWorld(world_name) {
     delete worlds[world_name];
 }
 
+function renameWorld(currentName, newName) {
+    if (currentName != newName) {
+        worlds[newName] = worlds[currentName];
+        delete worlds[currentName];
+    }
+}
+
 function addEntity(world, entity_name) {
     var entity = { "components": {}, "name":entity_name };
     world.entities[entity_name] = entity;
@@ -61,6 +92,22 @@ function addEntity(world, entity_name) {
 
 function deleteEntity(world, entity_name) {
     delete world.entities[entity_name];
+}
+
+function renameEntity(world, currentName, newName) {
+    if (currentName != newName) {
+        world.entities[newName] = world.entities[currentName];
+        world.entities[newName].name = newName;
+        delete world.entities[currentName];
+    }
+}
+
+function getEntities(world) {
+    var list = [];
+    for (var e in world.entities)
+        list.push(e);
+    list.sort();
+    return list;
 }
 
 // add an entity with sprite and transformation

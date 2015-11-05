@@ -82,10 +82,10 @@ function loadProject(filename) {
         });
 }
 
-var popup;
+var loadpopup;
 function loadDialog() {
     $.post("listprojects.php", function(data) {
-        popup = w2popup.open({
+        loadpopup = w2popup.open({
             title : 'Load Project',
             body: data
         });

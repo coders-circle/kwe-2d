@@ -14,5 +14,5 @@
 ?>
 </select>
 <br/><br/>
-<input id="dialogloadbutton" type="button" value="Load" onclick="loadProject($('#projectlist').val());popup.close();">
+<input id="dialogloadbutton" type="button" value="Load" onclick="loadProject($('#projectlist').val());loadpopup.close();">
 </div>

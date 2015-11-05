@@ -38,6 +38,31 @@ function deleteSelectedEntity() {
     }
 }
 
+function renameSelectedEntity() {
+    var target = currentSelection;
+    if (target.startsWith('entity:')) {
+        var names = target.substring("entity:".length).split(':');
+        var exists;
+        do {
+            var entity_name = prompt("Enter new entity name.", names[1]);
+            if (entity_name == null || entity_name == names[1])
+                return;
+            
+            // TODO: check entity name validity here
+
+            exists = existEntity(entity_name);
+            if (exists)
+                alert("Entity name already exists");
+        } while (exists);
+        
+        renameEntity(worlds[currentWorld], names[1], entity_name);
+        currentSelection = 'entity:'+names[0]+':'+entity_name;
+
+        refreshSidebar();
+        rerenderall();
+    }
+}
+
 function addNewWorld() {
     var exists;
     do {

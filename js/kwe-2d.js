@@ -19,7 +19,8 @@ function refreshSidebar() {
 
     var world = currentWorld;
     var enNodes = [];
-    for (var entity in worlds[world].entities) {
+    var elist = getEntities(worlds[world]);
+    for (var entity of elist) {
         var enNode = { id: "entity:" + world+":"+entity, text: entity, icon: 'fa fa-paper-plane-o', nodes:[] };
         enNodes.push(enNode);
     }
@@ -30,7 +31,8 @@ function refreshSidebar() {
     var spNodes = [];
 
     // for each sprite, add it to the right sidebar
-    for (var sprite in sprites) {
+    var slist = getSprites();
+    for (var sprite of slist) {
         var spNode = { id: "sprite:" + sprite, text: sprite, icon: 'fa fa-file-image-o', nodes:[], expanded: true };
         spNodes.push(spNode);
     }
@@ -90,6 +92,18 @@ function getContent(id) {
         return getEntityContent(id);
 }
 
+var resizePopup;
+function resizeCanvas() {
+    canvasWidth = Number($("#canvasWidth").val());
+    canvasHeight = Number($("#canvasHeight").val());
+    document.getElementById('c').width = canvasWidth;
+    canvas.setWidth(canvasWidth);
+    document.getElementById('c').height = canvasHeight;
+    canvas.setHeight(canvasHeight);
+    resizePopup.close();
+    rerenderall();
+}
+
 $(function () {
     var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
     var toolbar = '<div id="toolbar"></div>'
@@ -116,8 +130,9 @@ $(function () {
             { type: 'html', html:' Project name: <input id="projectname">'},
             { type: 'break'},
             { type: 'html', html:' Worlds: <select id="worlds" oninput="changeWorld(this.value);"></select>'},
-            { type: 'button', id:'add-world', icon: 'fa fa-plus'},
-            { type: 'button', id:'remove-world', icon: 'fa fa-minus'},
+            { type: 'button', id:'add-world', icon: 'fa fa-plus', hint: 'Add new world'},
+            { type: 'button', id:'remove-world', icon: 'fa fa-minus', hint: 'Remove world'},
+            { type: 'button', id:'rename-world', icon: 'fa fa-file-text-o', hint: 'Rename world'},
             { type: 'break'},
             { type: 'button', id:'menu-resize-canvas', caption:'Resize Canvas', icon: 'fa fa-expand'}
         ],
@@ -143,14 +158,32 @@ $(function () {
                     refreshSidebar();
                     rerenderall();
                     break;
+                case 'rename-world':
+                    var exists = false;
+                    do {
+                        var newName = prompt('Enter new name for current world', currentWorld);
+                        if (!newName || newName == currentWorld) {
+                            return;
+                        }
+                        exists = existWorld(newName);
+                        if (exists)
+                            alert("World with that name already exists");
+                    } while(exists);
+                    renameWorld(currentWorld, newName);
+                    currentWorld = newName;
+                    refreshSidebar();
+                    rerenderall();
+                    break;
                 case 'menu-resize-canvas':
-                    canvasWidth = parseInt(prompt("New width:", canvasWidth.toString()));
-                    canvasHeight = parseInt(prompt("New height:", canvasHeight.toString()));
-                    document.getElementById('c').width = canvasWidth;
-                    canvas.setWidth(canvasWidth);
-                    document.getElementById('c').height = canvasHeight;
-                    canvas.setHeight(canvasHeight);
-                    //rerenderall();
+                    var resizeDialogHtml = "<br/><div style='width:60%;margin:auto;text-align:right;'>"
+                                          + "Width: <input id='canvasWidth' type='Number' value='" + canvasWidth + "'><br/>"
+                                          +"<br/>Height: <input id='canvasHeight' type='Number' value='" + canvasHeight + "'><br/>"
+                                          +"<br/><input style='' type='button' onclick='resizeCanvas()' value='Resize'></div>";
+                    resizePopup = w2popup.open({
+                        title: 'Resize canvas',
+                        body: resizeDialogHtml,
+                        height: '200',
+                    });
                     break;
 
             }
@@ -164,9 +197,14 @@ $(function () {
         onClick: function (event) {
             currentSelection = event.target;
             w2ui['layout'].content('preview', getContent(event.target));
+
+            var names = event.target.substring("entity:".length).split(':');
+            var entity = worlds[names[0]].entities[names[1]];
+            canvas.setActiveObject(entity.img);
         },
-        topHTML: '&nbsp;<label style="cursor:pointer"><i class="fa fa-plus"></i><input style="display:none" type="button" id="entity_add" onclick=""></label> &nbsp;&nbsp;'
-            + '&nbsp;<label style="cursor:pointer"><i class="fa fa-minus"></i><input style="display:none" type="button" id="entity_delete" onclick="deleteSelectedEntity()"></label>',
+        topHTML: '<br/>&nbsp;<label style="cursor:pointer"><i class="fa fa-plus"></i><input style="display:none" type="button" id="entity_add" onclick=""></label> &nbsp;&nbsp;'
+            + '&nbsp;<label style="cursor:pointer"><i class="fa fa-minus"></i><input style="display:none" type="button" id="entity_delete" onclick="deleteSelectedEntity()"></label> &nbsp;&nbsp;'
+            + '&nbsp;<label style="cursor:pointer"><i class="fa fa-file-text-o"></i><input style="display:none" type="button" id="entity_rename" onclick="renameSelectedEntity()"></label>',
     });
     w2ui['layout'].content('left', leftSideBar);
 
@@ -177,8 +215,9 @@ $(function () {
         onClick: function (event) {
             selectSprite(event.target);
         },
-        topHTML: '&nbsp;<label style="cursor:pointer"><i class="fa fa-plus"></i><input style="display:none"type="file" id="sprite_file_selector" onchange="addSpriteFile()"></label> &nbsp;&nbsp;'
-            + '&nbsp;<label style="cursor:pointer"><i class="fa fa-minus"></i><input style="display:none" type="button" id="sprite_delete" onclick="deleteSelectedSprite()"></label>',
+        topHTML: '<br/>&nbsp;<label style="cursor:pointer"><i class="fa fa-plus"></i><input style="display:none"type="file" id="sprite_file_selector" onchange="addSpriteFile()"></label> &nbsp;&nbsp;'
+            + '&nbsp;<label style="cursor:pointer"><i class="fa fa-minus"></i><input style="display:none" type="button" id="sprite_delete" onclick="deleteSelectedSprite()"></label> &nbsp;&nbsp;'
+            + '&nbsp;<label style="cursor:pointer"><i class="fa fa-file-text-o"></i><input style="display:none" type="button" id="sprite_rename" onclick="renameSelectedSprite()"></label>',
     });
     rightlayout = $().w2layout({
         name: 'right-layout',
@@ -218,6 +257,7 @@ $(function () {
             if (e.target.entity != undefined) {
                 currentSelection = "entity:" + currentWorld + ":" + e.target.entity.name;
                 w2ui['layout'].content('preview', getContent(currentSelection));
+                leftSideBar.select(currentSelection);
             }
         },
         'object:modified': function(e) {
@@ -245,6 +285,7 @@ function rerenderall() {
     canvas.clear();
 
     for (var entityName in worlds[currentWorld].entities) {
+        console.log(entityName);
         var entity = worlds[currentWorld].entities[entityName];
 
         if ("Sprite" in entity.components && "Transformation" in entity.components) {
