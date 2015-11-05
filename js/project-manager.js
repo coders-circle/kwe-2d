@@ -3,7 +3,7 @@ function saveProject() {
     var data = { "components": components, "sprites":sprites, "worlds":worlds };
     var text = JSON.stringify(data);
 
-    $.post("upload.php", {filename:filename, data:text}, 
+    $.post("saveproject.php", {filename:filename, data:text}, 
         function(data) {
             alert(data);
         });
@@ -76,10 +76,20 @@ function loadProject(filename) {
 
                     $("#projectname").val(filename);
                 } catch(e) {
-                    alert("Error loading project");
+                    alert("Error loading project: " + filename);
                 }
             }
         });
+}
+
+var popup;
+function loadDialog() {
+    $.post("listprojects.php", function(data) {
+        popup = w2popup.open({
+            title : 'Load Project',
+            body: data
+        });
+    });
 }
 
 //function loadProject(file) {

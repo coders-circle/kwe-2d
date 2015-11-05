@@ -39,6 +39,7 @@ function addNewWorld() {
     } while (exists);
     
     addWorld(world_name);
+    currentWorld = world_name;
     refreshSidebar();
     rerenderall();
 }
@@ -65,6 +66,8 @@ function changeProperty(world, entityName, component, property, value) {
             entity.img.rotate(Number(value));
         canvas.renderAll();
     }
+    else if (component == "Sprite")
+        rerenderall();
 }
 
 function getEntityContent(id) {

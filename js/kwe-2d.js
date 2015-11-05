@@ -101,9 +101,10 @@ $(function () {
         onClick: function(event) {
             switch(event.target){
                 case 'menu-load-project':
+                    loadDialog();
                     //$('#open-file-dialog').trigger('click');
-                    var filename = prompt("Enter project name to load");
-                    loadProject(filename);
+                    //var filename = prompt("Enter project name to load");
+                    //loadProject(filename);
                     break;
                 case 'menu-save-project':
                     //var filename = prompt('Enter save file name', "Untitled");
