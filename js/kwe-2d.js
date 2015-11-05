@@ -8,6 +8,9 @@ var currentSelection;
 var currentWorld; // Change this to change the world
 var selectedComponent;
 
+var canvasWidth = 600;
+var canvasHeight = 350;
+
 
 // Refresh trees on the sidebars
 function refreshSidebar() {
@@ -90,7 +93,7 @@ function getContent(id) {
 $(function () {
     var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
     var toolbar = '<div id="toolbar"></div>'
-    var drawingContent = '<canvas id="c"  width="1200" height="350"></canvas>';
+    var drawingContent = '<canvas id="c"  width="'+canvasWidth+'" height="'+canvasHeight+'"></canvas>';
     $('#homepage').w2layout({
         name: 'layout',
         panels: [
@@ -115,6 +118,8 @@ $(function () {
             { type: 'html', html:' Worlds: <select id="worlds" oninput="changeWorld(this.value);"></select>'},
             { type: 'button', id:'add-world', icon: 'fa fa-plus'},
             { type: 'button', id:'remove-world', icon: 'fa fa-minus'},
+            { type: 'break'},
+            { type: 'button', id:'menu-resize-canvas', caption:'Resize Canvas', icon: 'fa fa-expand'}
         ],
         onClick: function(event) {
             switch(event.target){
@@ -138,6 +143,16 @@ $(function () {
                     refreshSidebar();
                     rerenderall();
                     break;
+                case 'menu-resize-canvas':
+                    canvasWidth = parseInt(prompt("New width:", canvasWidth.toString()));
+                    canvasHeight = parseInt(prompt("New height:", canvasHeight.toString()));
+                    document.getElementById('c').width = canvasWidth;
+                    canvas.setWidth(canvasWidth);
+                    document.getElementById('c').height = canvasHeight;
+                    canvas.setHeight(canvasHeight);
+                    //rerenderall();
+                    break;
+
             }
         }
     });
@@ -184,13 +199,13 @@ $(function () {
     var w1 = addWorld(currentWorld);
 
     refreshSidebar();
-    
+
     w2ui['right-layout'].on('refresh', function(event) {
         event.onComplete = function() {
             spritePreviewCanvas = new fabric.StaticCanvas('canvas-sprite-preview');
         }
     });
-    
+
     canvas = new fabric.Canvas('c', {
         hoverCursor: 'pointer',
         selection: false
