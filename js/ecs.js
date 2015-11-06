@@ -59,6 +59,19 @@ function renameSprite(currentName, newName) {
         }
 }
 
+function reloadSpriteImage(sprite) {
+    fabric.Image.fromURL(sprite.file, function(img) {
+        sprite.img = img;
+    });
+}
+
+function reloadSprites() {
+    for (var s in sprites) {
+        var sprite = sprites[s];
+        reloadSpriteImage(sprite);
+    }
+}
+
 function getSprites() {
     var list = [];
     for (var s in sprites)

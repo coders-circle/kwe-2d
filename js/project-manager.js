@@ -70,6 +70,7 @@ function loadProject(filename) {
         
                     components = result.components;
                     sprites = result.sprites;
+                    reloadSprites();
                     worlds = result.worlds;
                     refreshSidebar();
                     rerenderall();
