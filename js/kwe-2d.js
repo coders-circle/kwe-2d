@@ -8,9 +8,11 @@ var currentSelection;
 var currentWorld; // Change this to change the world
 var selectedComponent;
 
-var canvasWidth = 600;
+var canvasWidth = 2500;
 var canvasHeight = 350;
 
+var drawingPath = false;
+var pathEntity;
 
 // Refresh trees on the sidebars
 function refreshSidebar() {
@@ -68,6 +70,8 @@ function refreshSidebar() {
             rightSideBar.select(currentSelection);
         }
         else if (currentSelection.startsWith('entity')) {
+            spritePreviewCanvas.clear();
+            spritePreviewCanvas.renderAll();
             var names = currentSelection.substring("entity:".length).split(':');
             if (names[0] != currentWorld)
                 w2ui['layout'].content('preview', '');
@@ -196,13 +200,9 @@ $(function () {
         nodes: [],
         onClick: function (event) {
             currentSelection = event.target;
-            w2ui['layout'].content('preview', getContent(event.target));
-
-            var names = event.target.substring("entity:".length).split(':');
-            var entity = worlds[names[0]].entities[names[1]];
-            canvas.setActiveObject(entity.img);
+            selectEntity(currentSelection, "sidebar");
         },
-        topHTML: '<br/>&nbsp;<label style="cursor:pointer"><i class="fa fa-plus"></i><input style="display:none" type="button" id="entity_add" onclick=""></label> &nbsp;&nbsp;'
+        topHTML: '<br/>&nbsp;<label style="cursor:pointer"><i class="fa fa-plus"></i><input style="display:none" type="button" id="entity_add" onclick="addNewEntity()"></label> &nbsp;&nbsp;'
             + '&nbsp;<label style="cursor:pointer"><i class="fa fa-minus"></i><input style="display:none" type="button" id="entity_delete" onclick="deleteSelectedEntity()"></label> &nbsp;&nbsp;'
             + '&nbsp;<label style="cursor:pointer"><i class="fa fa-file-text-o"></i><input style="display:none" type="button" id="entity_rename" onclick="renameSelectedEntity()"></label>',
     });
@@ -256,8 +256,11 @@ $(function () {
         'object:selected': function(e) {
             if (e.target.entity != undefined) {
                 currentSelection = "entity:" + currentWorld + ":" + e.target.entity.name;
-                w2ui['layout'].content('preview', getContent(currentSelection));
-                leftSideBar.select(currentSelection);
+                selectEntity(currentSelection, "canvas");
+                //w2ui['layout'].content('preview', getContent(currentSelection));
+
+                //spritePreviewCanvas.clear();
+                //spritePreviewCanvas.renderAll();
             }
         },
         'object:modified': function(e) {
@@ -265,14 +268,36 @@ $(function () {
 
             if (e.target.entity != undefined) {
                 var tcomp = e.target.entity.components["Transformation"];
-                tcomp["Translate-X"] = e.target.left;
-                tcomp["Translate-Y"] = e.target.top;
-                tcomp["Scale-X"] = e.target.scaleX;
-                tcomp["Scale-Y"] = e.target.scaleY;
-                tcomp["Angle"] = e.target.angle;
+                if (tcomp) {
+                    tcomp["Translate-X"] = e.target.left;
+                    tcomp["Translate-Y"] = e.target.top;
+                    tcomp["Scale-X"] = e.target.scaleX;
+                    tcomp["Scale-Y"] = e.target.scaleY;
+                    tcomp["Angle"] = e.target.angle;
+                }
 
                 if (currentSelection != undefined)
                     w2ui['layout'].content('preview', getContent(currentSelection));
+            }
+        },
+        'mouse:up': function(e) {
+            if (drawingPath && pathEntity && "Path" in pathEntity.components) {
+                var path = pathEntity.components.Path;
+                var point = canvas.getPointer(e.e);
+                if (e.e.shiftKey) {
+                    var points = parsePoints(path.Points);
+                    path.Points = "";
+                    for (var p of points) {
+                        if (Math.abs(p.x-point.x)>5 || Math.abs(p.y-point.y)>5)
+                            path.Points = path.Points + "(" + p.x + "," + p.y+") ";
+                    }
+                }
+                else {
+                    path.Points = path.Points + "(" + point.x + "," + point.y + ") ";
+                }
+                rerenderall();
+                if (currentSelection == 'entity:' + currentWorld+':'+pathEntity.name)
+                    selectEntity(currentSelection);
             }
         }
     });
@@ -285,12 +310,13 @@ function rerenderall() {
     canvas.clear();
 
     for (var entityName in worlds[currentWorld].entities) {
-        console.log(entityName);
         var entity = worlds[currentWorld].entities[entityName];
 
         if ("Sprite" in entity.components && "Transformation" in entity.components) {
             createImage(entity);
         }
+        else if ("Path" in entity.components)
+            createPath(entity);
     }
 
     canvas.renderAll();

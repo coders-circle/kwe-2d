@@ -3,6 +3,7 @@ var components = {
                     "Sprite": { "Sprite":[] }, 
                     "Transformation": { "Translate-X":0.0, "Translate-Y":0.0, "Scale-X":1.0, "Scale-Y":1.0, "Angle":0.0 },
                     "RigidBody": { "Type":["Static", "Dynamic", "Kinematic"], "Density": 0.0, "Friction":0.2, "Restitution":0 },
+                    "Path": { "Points": "" },
 
                     // Definition is of form:
                     // "Component-Name": { "Property-Name": "Property-Type", "Choice-Property": [ "Value1", "Value2", ...], ... },

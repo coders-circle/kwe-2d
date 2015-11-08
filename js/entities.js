@@ -19,7 +19,10 @@ function addNewEntity(spr) {
             alert("Couldn't add, entity name already exists");
     } while (exists);
     
-    addSpriteEntity(worlds[currentWorld], entity_name, spr);
+    if (spr)
+        addSpriteEntity(worlds[currentWorld], entity_name, spr);
+    else
+        addEntity(worlds[currentWorld], entity_name);
     refreshSidebar();
     rerenderall();
 }
@@ -105,8 +108,10 @@ function changeProperty(world, entityName, component, property, value) {
             entity.img.rotate(Number(value));
         canvas.renderAll();
     }
-    else if (component == "Sprite")
+    else if (component == "Sprite" || component == "Path") {
+        drawingPath = true;
         rerenderall();
+    }
 }
 
 function getEntityContent(id) {
@@ -127,7 +132,7 @@ function getEntityContent(id) {
 
         if (c != "Sprite" && c != "Transformation") {
             var delcompevent = "delComponent(worlds['" + names[0] + "'].entities['" + names[1] + "'],'" + c + "');"
-                            + "w2ui['layout'].content('preview', getContent(currentSelection));";
+                            + "selectEntity(currentSelection);";
             content += "<button onclick=\"" + delcompevent + "\"> Remove </button><br/>";
         }
         else
@@ -168,7 +173,7 @@ function getEntityContent(id) {
     }
 
     var addcompevent = "addComponent(worlds['" + names[0] + "'].entities['" + names[1] + "'],selectedComponent);"
-                        + "w2ui['layout'].content('preview', getContent(currentSelection));";
+                        + "selectEntity(currentSelection);";
     excontent = "<select oninput=\"selectedComponent=this.value;\">";
     selectedComponent = "";
     for (comp in components) {
@@ -211,4 +216,44 @@ function createImage(entity) {
         entity.img = img;
         canvas.add(img);
     });
+}
+
+function selectEntity(target, caller) {
+    w2ui['layout'].content('preview', getContent(target));
+    
+    var names = target.substring("entity:".length).split(':');
+    var entity = worlds[names[0]].entities[names[1]];
+    if (caller!="canvas" && entity.img)
+        canvas.setActiveObject(entity.img);
+    if (caller!="sidebar")
+        leftSideBar.select(currentSelection);
+
+    
+    spritePreviewCanvas.clear();
+    spritePreviewCanvas.renderAll();
+
+    if ("Path" in entity.components) {
+        drawingPath = true;
+        pathEntity = entity;
+    }
+    else {
+        drawingPath = false;
+        pathEntity = entity;
+    }
+}
+
+function createPath(entity) {
+    var path = entity.components["Path"]["Points"];
+    var obj = new fabric.Polyline(parsePoints(path), {
+        perPixelTargetFind: true,
+        targetFindTolerance: 4,
+        selectable: false,
+        fill: 'transparent',
+        stroke: 'black', strokeWidth: 1,
+        hasBorders: true, hasControls: false,
+    });
+
+    entity.img = obj;
+    obj.entity = entity;
+    canvas.add(obj);
 }

@@ -51,3 +51,17 @@ function getNewWorldName(i) {
 }
 
 
+function parsePoints(pstr) {
+    points = [];
+    pstr_array = pstr.match(/\([\-|\d|\.|,]*\)/g);
+    for (var i in pstr_array) {
+        var str = pstr_array[i];
+        var point = {x:0, y:0};
+        
+        vals = str.match(/[\-|\d|\.]+/g);
+        point.x = Number(vals[0]);
+        point.y = Number(vals[1]);
+        points.push(point);
+    }
+    return points;
+}

@@ -74,7 +74,7 @@ function getSpriteContent(id) {
     content += 'Width: ' + sprite.width + '&nbsp;&nbsp;&nbsp;';
     content += 'Height: ' + sprite.height + '<br/><br/>';
 
-    content += 'Shape: <br/>';
+    content += 'Bounding Shape: <br/>';
     
     var changeshape = "sprites." + name + ".shape.type=this.value;"
                     + "selectSprite(currentSelection);";
@@ -106,21 +106,6 @@ function getSpriteContent(id) {
     return content;
 }
 
-function parsePoints(pstr) {
-    points = [];
-    pstr_array = pstr.match(/\([\d|\.|,]*\)/g);
-    for (var i in pstr_array) {
-        var str = pstr_array[i];
-        var point = {x:0, y:0};
-        
-        vals = str.match(/[\d|\.]+/g);
-        point.x = Number(vals[0]);
-        point.y = Number(vals[1]);
-        points.push(point);
-    }
-    return points;
-}
-
 function refreshSpritePreview() {
     if (currentSelection.startsWith('sprite:')) {
         var sprite = sprites[currentSelection.substring('sprite:'.length)];
@@ -150,8 +135,7 @@ function refreshSpritePreview() {
         }
         else if (sprite.shape.type == 'polygon') {
             var circle = new fabric.Polygon(parsePoints(sprite.shape.points),{
-                left: sprite.width/2, top:sprite.height/2,
-                originX: 'center', originY: 'center',
+                originX: 'left', originY: 'top',
                 fill: 'transparent',
                 stroke: 'black', strokeWidth:2,
             });
