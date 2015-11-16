@@ -138,7 +138,9 @@ $(function () {
             { type: 'button', id:'remove-world', icon: 'fa fa-minus', hint: 'Remove world'},
             { type: 'button', id:'rename-world', icon: 'fa fa-file-text-o', hint: 'Rename world'},
             { type: 'break'},
-            { type: 'button', id:'menu-resize-canvas', caption:'Resize Canvas', icon: 'fa fa-expand'}
+            { type: 'button', id:'menu-resize-canvas', caption:'Resize Canvas', icon: 'fa fa-expand'},
+            { type: 'break'},
+            { type: 'button', id:'menu-add-background', caption:'Add Background', icon: 'fa fa-file-image-o'}
         ],
         onClick: function(event) {
             switch(event.target){
@@ -188,6 +190,9 @@ $(function () {
                         body: resizeDialogHtml,
                         height: '200',
                     });
+                    break;
+                case 'menu-add-background':
+                    $('#add-background-file-dialog').click();
                     break;
 
             }
@@ -320,6 +325,12 @@ function rerenderall() {
     }
 
     canvas.renderAll();
+}
+
+function onAddBackgroundDialogChange(){
+    var fileInput = document.querySelector('#add-background-file-dialog');
+    var file = fileInput.files[0];
+    // TODO: add the background file and display in canvas
 }
 
 function onOpenFileDialogChange(){
