@@ -132,7 +132,7 @@ function getEntityContent(id) {
 
         if (c != "Sprite" && c != "Transformation") {
             var delcompevent = "delComponent(worlds['" + names[0] + "'].entities['" + names[1] + "'],'" + c + "');"
-                            + "selectEntity(currentSelection);";
+                            + "selectEntity(currentSelection); rerenderall();";
             content += "<button onclick=\"" + delcompevent + "\"> Remove </button><br/>";
         }
         else
@@ -150,7 +150,7 @@ function getEntityContent(id) {
             var propdef = compdef[prop];
 
             if (typeof propdef === 'string')
-                propcontent = "<input " + eventstr + " type='text' value='" + property + "'>";
+                propcontent = "<input " + eventstr + " type='text' value='" + property + "' style='width: 500px;'>";
 
             else if (typeof propdef === 'number')
                 propcontent = "<input " + eventstr + " type='number' value='" + property + "' step='0.1' style='width: 90px;'>";
@@ -177,7 +177,7 @@ function getEntityContent(id) {
     excontent = "<select oninput=\"selectedComponent=this.value;\">";
     selectedComponent = "";
     for (comp in components) {
-        if (!(comp in entity.components)) {
+        if (comp != "Sprite" && comp !="Transformation" && !(comp in entity.components)) {
             if (selectedComponent == "")
                 selectedComponent = comp;
             excontent += "<option value='" + comp + "'>" + comp + "</option>";

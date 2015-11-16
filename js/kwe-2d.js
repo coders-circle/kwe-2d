@@ -14,6 +14,8 @@ var canvasHeight = 350;
 var drawingPath = false;
 var pathEntity;
 
+var grid = 4;
+
 // Refresh trees on the sidebars
 function refreshSidebar() {
     leftSideBar.nodes = [];
@@ -252,6 +254,10 @@ $(function () {
     canvas.on({
         'object:moving': function(e) {
             e.target.opacity = 0.5;
+            e.target.set({
+                left: Math.round(e.target.left/grid)*grid,
+                top: Math.round(e.target.top/grid)*grid,
+            });
         },
         'object:selected': function(e) {
             if (e.target.entity != undefined) {
