@@ -142,7 +142,8 @@ $(function () {
             { type: 'break'},
             { type: 'button', id:'menu-resize-canvas', caption:'Resize Canvas', icon: 'fa fa-expand'},
             { type: 'break'},
-            { type: 'button', id:'menu-add-background', caption:'Add Background', icon: 'fa fa-file-image-o'}
+            { type: 'button', id:'menu-add-background', caption:'Change Background', icon: 'fa fa-file-image-o'},
+            { type: 'button', id:'menu-reset-background', caption:'Reset Background'},
         ],
         onClick: function(event) {
             switch(event.target){
@@ -164,6 +165,10 @@ $(function () {
                     $("#worlds option[value='" + currentWorld + "']").remove();
                     currentWorld = $("#worlds").val();
                     refreshSidebar();
+                    rerenderall();
+                    break;
+                case 'menu-reset-background':
+                    background = null;
                     rerenderall();
                     break;
                 case 'rename-world':
@@ -317,9 +322,7 @@ $(function () {
     $('#projectname').val("untitled");
 });
 
-function rerenderall() {
-    canvas.clear();
-
+function drawEntities() {
     for (var entityName in worlds[currentWorld].entities) {
         var entity = worlds[currentWorld].entities[entityName];
 
@@ -333,10 +336,35 @@ function rerenderall() {
     canvas.renderAll();
 }
 
+function rerenderall() {
+    canvas.clear();
+
+    if (background) {
+        fabric.Image.fromURL(background, function(img) {
+            img.set({
+                left: 0, top: 0,
+                hasControls: false, hasBorders: false,
+                selectable: false,
+            });
+            canvas.add(img);
+            
+            drawEntities();
+        });
+    }
+    else
+        drawEntities();
+}
+
+var background;
 function onAddBackgroundDialogChange(){
     var fileInput = document.querySelector('#add-background-file-dialog');
     var file = fileInput.files[0];
-    // TODO: add the background file and display in canvas
+
+    openFileAsDataUrl(file, function(url) {
+        fileInput.value = "";
+        background = url;
+        rerenderall();
+    });
 }
 
 function onOpenFileDialogChange(){
