@@ -68,7 +68,12 @@ function loadProject(filename) {
                 try {
                     var result = JSON.parse(data);
         
-                    components = result.components;
+                    for (var x in result.components) {
+                        if (x in components)
+                            continue;
+                        components[x] = result.components[x];
+                    }
+
                     sprites = result.sprites;
                     reloadSprites();
                     worlds = result.worlds;
